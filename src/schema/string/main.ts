@@ -160,7 +160,7 @@ export class VineString extends BaseLiteralType<string, string, string> {
   }
 
   /**
-   * Validates the value to be an active URL
+   * Validates the value against a regular expression
    */
   regex(expression: RegExp) {
     return this.use(regexRule(expression))
