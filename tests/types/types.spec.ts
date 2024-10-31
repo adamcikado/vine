@@ -606,6 +606,61 @@ test.group('Types | Object groups', () => {
     >()
   })
 
+  test('infer types with optional children', ({ expectTypeOf }) => {
+    const guideSchema = vine.group([
+      vine.group.if((data) => vine.helpers.isTrue(data.hiring_guide), {
+        hiring_guide: vine.literal(true),
+        guide_name: vine.string(),
+        fees: vine.string().optional(),
+      }),
+      vine.group.if(() => true, {
+        hiring_guide: vine.literal(false),
+      }),
+    ])
+
+    const schema = vine
+      .object({
+        visitor_name: vine.string().optional(),
+      })
+      .merge(guideSchema)
+      .optional()
+
+    type InputsSchema = InferInput<typeof schema>
+    expectTypeOf<InputsSchema>().toEqualTypeOf<
+      | ({
+          visitor_name?: string | undefined | null
+        } & (
+          | {
+              hiring_guide: true
+              guide_name: string
+              fees?: string | undefined | null
+            }
+          | {
+              hiring_guide: false
+            }
+        ))
+      | null
+      | undefined
+    >()
+
+    type Schema = Infer<typeof schema>
+    expectTypeOf<Schema>().toEqualTypeOf<
+      | ({
+          visitor_name?: string | undefined
+        } & (
+          | {
+              hiring_guide: true
+              guide_name: string
+              fees?: string | undefined
+            }
+          | {
+              hiring_guide: false
+            }
+        ))
+      | undefined
+    >()
+  })
+
   test('infer types with multiple groups', ({ expectTypeOf }) => {
     const guideSchema = vine.group([
       vine.group.if((data) => vine.helpers.isTrue(data.hiring_guide), {
